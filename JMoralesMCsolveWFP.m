@@ -19,27 +19,29 @@
 a=1.0; %h=2*pi; %1=hbar=h/(2pi) => h=2*pi
 sigmax=a/sqrt(2); sigmak=1/(a*sqrt(2));
 
-Nsamples = 10^3; % <---- PARAMETER 1: VALUE DETERMINES NUMERICS CONVERGENCE
+Nsamples = 10^4; % <---- PARAMETER 1: VALUE DETERMINES NUMERICS CONVERGENCE
+T=10; dt=0.1; % <----- PARAMETERS 2 & 3: VALUES DETERMINE NUMERICAL CVG.
+Ntime = round(T/dt);
 
-xold=zeros(1,Nsamples); kold=zeros(1,Nsamples); 
-xnew=zeros(1,Nsamples); knew=zeros(1,Nsamples);
+x=zeros(Ntime,Nsamples); k=zeros(Ntime,Nsamples); 
+xss=zeros(1,Nsamples); kss=zeros(1,Nsamples); 
 Nplot=1000;
 %STEP 1: Sampling of Initial Condition, represented as point distribution.
 for i=1:Nsamples
-    xold(i)=normrnd(0,sigmax); kold(i)=normrnd(0,sigmak); %IC: Groundstate
+    x(1,i)=normrnd(0,sigmax); k(1,i)=normrnd(0,sigmak); %IC: Groundstate
 end
 
 % PLOT SAMPLING OF INITIAL CONDITION TOGETHER WITH ITS LEVEL SETS
 figure(1); hold on; title('Initial Condition')
 for i=1:Nsamples
-    scatter(xold(i),kold(i),"red",'.')
+    scatter(x(1,i),k(1,i),5,"red",'o')
 end
 % LEVEL SETS OF INITIAL CONDITION INCLUDED BELOW
 f=@(x,k) (a^2)*(k.^2) + (x.^2)/(a^2);
-dxplot = (max(xold)-min(xold))/Nplot;
-dkplot = (max(kold)-min(kold))/Nplot;
-xplot = min(xold):dxplot:max(xold);
-kplot = min(kold):dkplot:max(kold);
+dxplot = (max(x(1,:))-min(x(1,:)))/Nplot;
+dkplot = (max(k(1,:))-min(k(1,:)))/Nplot;
+xplot = min(x(1,:)):dxplot:max(x(1,:));
+kplot = min(k(1,:)):dkplot:max(k(1,:));
 [X,K]=meshgrid(xplot,kplot);
 z=f(X,K);
 contour(X,K,z,100)
@@ -49,31 +51,28 @@ exportgraphics(gcf,'InitialCondition.pdf','ContentType','vector')
 %STEP 2: (k,-x-k)-Transport + D=Id-Diffusion over time evolution
 Dxx = 1.; Dkk = 1.; D = [Dxx, 0.; 0., Dkk]; %Diffusion thru unit normals
 
-T=10; dt=0.1; % <----- PARAMETERS 2 & 3: VALUES DETERMINE NUMERICAL CVG.
-
-Ntime = round(T/dt);
 % FWD EULER TIME EVOLUTION: 
 %d(x,k)/dt = (k,-x-k) + randomwalk(D) so 
 % (x,k)^new -(x,k)^old = dt*(k,-x-k) + dt*randomwalk(D) + O(dt^2) approx.
-for j=1:Ntime
+for j=2:Ntime
     for i=1:Nsamples
     	RandomVec=mvnrnd([0, 0],D*dt); %MC: Co-Variance matrix is dt*D
-        xnew(i)= xold(i) + kold(i)*dt + RandomVec(1);  %normrnd(0,Dxx)*sqrt(dt);%D? E-Mry
-        knew(i)= kold(i) -(xold(i)+kold(i))*dt + RandomVec(2); %normrnd(0,Dkk)*sqrt(dt);
+        x(j,i)= x(j-1,i) + k(j-1,i)*dt + RandomVec(1);  %normrnd(0,Dxx)*sqrt(dt);%D? E-Mry
+        k(j,i)= k(j-1,i) -(x(j-1,i)+k(j-1,i))*dt + RandomVec(2); %normrnd(0,Dkk)*sqrt(dt);
     end
 end
 
 %PLOT SAMPLES OF NUMERICAL SOLUTION AND LEVEL SETS OF EXPECTED STEADY STATE
 figure(2); hold on; title('Numerical Solution')
 for i=1:Nsamples
-    scatter(xnew(i),knew(i),"red",'.')
+    scatter(x(Ntime,i),k(Ntime,i),5,"red",'o')
 end
 % LEVEL SETS OF STEADY STATE (INCLUDED IN THE FIGURE): GAUSSIAN ARGUMENT IS
 fss=@(x,k) (3./10.)*(k.^2) + (x.^2)/5. + x.*k/5.;
-dxplot = (max(xnew)-min(xnew))/Nplot;
-dkplot = (max(knew)-min(knew))/Nplot;
-xplot = min(xnew):dxplot:max(xnew);
-kplot = min(knew):dkplot:max(knew);
+dxplot = (max(x(Ntime,:))-min(x(Ntime,:)))/Nplot;
+dkplot = (max(k(Ntime,:))-min(k(Ntime,:)))/Nplot;
+xplot = min(x(Ntime,:)):dxplot:max(x(Ntime,:));
+kplot = min(k(Ntime,:)):dkplot:max(k(Ntime,:));
 [X,K]=meshgrid(xplot,kplot);
 z=fss(X,K);
 contour(X,K,z,100)
@@ -94,20 +93,20 @@ Sigma*InvSigma
 InvSigma*Sigma
 for i=1:Nsamples
     RandomVec=mvnrnd([0, 0],Sigma); %Sampling from steady state
-    xold(i)=RandomVec(1);
-    kold(i)=RandomVec(2);
+    xss(i)=RandomVec(1);
+    kss(i)=RandomVec(2);
 end
 figure(3); hold on; title('Steady state')
 for i=1:Nsamples
-    scatter(xold(i),kold(i),"red",'.')
+    scatter(xss(i),kss(i),5,"red",'o')
 end
 % LEVEL SETS OF STEADY STATE INCLUDED IN THE FIGURE
 fss=@(x,k) (3./10.)*(k.^2) + (x.^2)/5. + x.*k/5.;
-dxplot = (max(xold)-min(xold))/Nplot;
-dkplot = (max(kold)-min(kold))/Nplot;
-xplot = min(xold):dxplot:max(xold);
-kplot = min(kold):dkplot:max(kold);
-[X,K]=meshgrid(xplot,kplot);
+dxplot = (max(xss)-min(xss))/Nplot;
+dkplot = (max(kss)-min(kss))/Nplot;
+xplot = min(xss):dxplot:max(xss);
+kplot = min(kss):dkplot:max(kss);
+[X,K]=meshgrid(xss,kss);
 z=fss(X,K);
 contour(X,K,z,100);
 hold off;
