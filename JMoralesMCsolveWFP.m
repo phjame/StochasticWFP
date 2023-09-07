@@ -24,7 +24,6 @@ T=10; dt=0.1; % <----- PARAMETERS 2 & 3: VALUES DETERMINE NUMERICAL CVG.
 Ntime = round(T/dt);
 
 x=zeros(Ntime,Nsamples); k=zeros(Ntime,Nsamples); 
-xss=zeros(1,Nsamples); kss=zeros(1,Nsamples); 
 Nplot=1000;
 %STEP 1: Sampling of Initial Condition, represented as point distribution.
 for i=1:Nsamples
@@ -78,7 +77,7 @@ z=fss(X,K);
 contour(X,K,z,100)
 hold off;
 exportgraphics(gcf,'NumericalSolution.pdf','ContentType','vector')
-
+%{
 %ADDITIONAL STEP: Sampling of Steady State (SANITY CHECK).
 % Analytical form of steady state solution is:
 % exp(-x^2/5 - x.k/5 - 3k^2/10)/(2pi*sqrt(5))
@@ -111,3 +110,4 @@ z=fss(X,K);
 contour(X,K,z,100);
 hold off;
 exportgraphics(gcf,'AnalyticalSteadyState.pdf','ContentType','vector')
+%}
