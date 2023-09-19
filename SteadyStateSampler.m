@@ -1,5 +1,6 @@
 Nsamples = 10^4; % <---- PARAMETER 1: VALUE DETERMINES NUMERICS CONVERGENCE
 Nplot=1000;
+x=zeros(1,Nsamples); k=zeros(1,Nsamples); 
 xmin=0.; xmax=0.;
 kmin=0.; kmax=0.;
 %ADDITIONAL STEP: Sampling of Steady State (SANITY CHECK).
@@ -19,7 +20,7 @@ for i=1:Nsamples
     RandomVec=mvnrnd([0, 0],Sigma); %Sampling from steady state
     xss=RandomVec(1);
     kss=RandomVec(2);
-    scatter(xss,kss,5,"red",'o')
+    scatter(xss,kss,5,"red",'.')
     if xss<xmin
 	    xmin = xss;
     end
@@ -32,8 +33,10 @@ for i=1:Nsamples
     if kss>kmax
 	    kmax = kss;
     end
+    x(1,i) = xss;
+    k(1,i) = kss;
 end
-
+hist = histogram2(x,k,'DisplayStyle','tile','ShowEmptyBins','on');
 % LEVEL SETS OF STEADY STATE INCLUDED IN THE FIGURE
 fss=@(x,k) (3./10.)*(k.^2) + (x.^2)/5. + x.*k/5.;
 dxplot = (xmax-xmin)/Nplot;
@@ -42,8 +45,6 @@ xplot = xmin:dxplot:xmax;
 kplot = kmin:dkplot:kmax;
 [X,K]=meshgrid(xplot,kplot);
 z=fss(X,K);
-
 contour(X,K,z,100);%THIS PROVOKES THE ISSUE...?
 hold off;
 exportgraphics(gcf,'AnalyticalSteadyState.pdf','ContentType','vector')
-%}
