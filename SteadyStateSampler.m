@@ -1,6 +1,6 @@
 Nsamples = 10^4; % <---- PARAMETER 1: VALUE DETERMINES NUMERICS CONVERGENCE
 Nplot=1000;
-x=zeros(1,Nsamples); k=zeros(1,Nsamples); 
+x=zeros(Nsamples,1); k=zeros(Nsamples,1); 
 xmin=0.; xmax=0.;
 kmin=0.; kmax=0.;
 %ADDITIONAL STEP: Sampling of Steady State (SANITY CHECK).
@@ -33,10 +33,16 @@ for i=1:Nsamples
     if kss>kmax
 	    kmax = kss;
     end
-    x(1,i) = xss;
-    k(1,i) = kss;
+    x(i,1) = xss;
+    k(i,1) = kss;
 end
 hist = histogram2(x,k,'DisplayStyle','tile','ShowEmptyBins','on');
+GMModel = fitgmdist([x,k],1)
+GMModel.mu
+GMModel.Sigma
+gmPDF = @(x,k) arrayfun(@(x0,k0) pdf(GMModel,[x0 k0]),x,k);
+gfun = gca;
+fcontour(gmPDF,[gfun.XLim gfun.YLim],'--r');
 % LEVEL SETS OF STEADY STATE INCLUDED IN THE FIGURE
 fss=@(x,k) (3./10.)*(k.^2) + (x.^2)/5. + x.*k/5.;
 dxplot = (xmax-xmin)/Nplot;
