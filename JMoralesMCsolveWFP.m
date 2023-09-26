@@ -36,6 +36,12 @@ for i=1:Nsamples
     scatter(x(1,i),k(1,i),5,"red",'.')
 end
 hist = histogram2(x(1,:),k(1,:),'DisplayStyle','tile','ShowEmptyBins','on');
+GMModel = fitgmdist([x(1,:)',k(1,:)'],1)
+GMModel.mu
+GMModel.Sigma
+gmPDF = @(x,k) arrayfun(@(x0,k0) pdf(GMModel,[x0 k0]),x(1,:)',k(1,:)');
+gfun = gca;
+fcontour(gmPDF,[gfun.XLim gfun.YLim],'--r');
 % LEVEL SETS OF INITIAL CONDITION INCLUDED BELOW
 f=@(x,k) (a^2)*(k.^2) + (x.^2)/(a^2);
 dxplot = (max(x(1,:))-min(x(1,:)))/Nplot;
@@ -46,7 +52,7 @@ kplot = min(k(1,:)):dkplot:max(k(1,:));
 z=f(X,K);
 contour(X,K,z,100)
 hold off; 
-exportgraphics(gcf,'InitialCondition.pdf','ContentType','vector')
+exportgraphics(gcf,'InitialCondition.pdf','ContentType','image')
 
 %STEP 2: (k,-x-k)-Transport + D=Id-Diffusion over time evolution
 Dxx = 1.; Dkk = 1.; D = [Dxx, 0.; 0., Dkk]; %Diffusion thru unit normals
@@ -56,7 +62,7 @@ Dxx = 1.; Dkk = 1.; D = [Dxx, 0.; 0., Dkk]; %Diffusion thru unit normals
 % (x,k)^new -(x,k)^old = dt*(k,-x-k) + dt*randomwalk(D) + O(dt^2) approx.
 for j=2:Ntime
     for i=1:Nsamples
-    	RandomVec=mvnrnd([0, 0],D*dt); %MC: Co-Variance matrix is dt*D
+    	RandomVec=mvnrnd([0, 0],2*D*dt); %MC: Co-Variance matrix is dt*D
         x(j,i)= x(j-1,i) + k(j-1,i)*dt + RandomVec(1);  %normrnd(0,Dxx)*sqrt(dt);%D? E-Mry
         k(j,i)= k(j-1,i) -(x(j-1,i)+k(j-1,i))*dt + RandomVec(2); %normrnd(0,Dkk)*sqrt(dt);
     end
@@ -68,6 +74,12 @@ for i=1:Nsamples
     scatter(x(Ntime,i),k(Ntime,i),5,"red",'.')
 end
 hist = histogram2(x(Ntime,:),k(Ntime,:),'DisplayStyle','tile','ShowEmptyBins','on');
+GMModel = fitgmdist([x(Ntime,:)',k(Ntime,:)'],1)
+GMModel.mu
+GMModel.Sigma
+gmPDF = @(x,k) arrayfun(@(x0,k0) pdf(GMModel,[x0 k0]),x(Ntime,:)',k(Ntime,:)');
+gfun = gca;
+fcontour(gmPDF,[gfun.XLim gfun.YLim],'--r');
 % LEVEL SETS OF STEADY STATE (INCLUDED IN THE FIGURE): GAUSSIAN ARGUMENT IS
 fss=@(x,k) (3./10.)*(k.^2) + (x.^2)/5. + x.*k/5.;
 dxplot = (max(x(Ntime,:))-min(x(Ntime,:)))/Nplot;
@@ -78,4 +90,4 @@ kplot = min(k(Ntime,:)):dkplot:max(k(Ntime,:));
 z=fss(X,K);
 contour(X,K,z,100)
 hold off;
-exportgraphics(gcf,'NumericalSolution.pdf','ContentType','vector')
+exportgraphics(gcf,'NumericalSolution.pdf','ContentType','image')
