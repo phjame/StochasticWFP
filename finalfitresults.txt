@@ -1,0 +1,27 @@
+Sanity checks:
+
+0. IC: Harmonic GroundState
+
+Analytic Mean: [0		 0]
+Sampled  Mean: [-0.0027    0.0024]  <--- Error in estimation of mean O(0.003)
+
+Analytic Covariance matrix: [0.5	 0; 		0 	0.5]
+Sampled  Covariance matrix: [0.4961    0.0155;    0.0155    0.4853] <--Error O(0.01)
+
+1. FT: Steady state (known analytic solution for harmonic potential)
+
+Analytic Mean: [0		 0]
+Sampled  Mean: [-0.0065	    0.0066] <--- Error in estimation of mean O(0.007)
+
+Analytic Covariance matrix: [3		 -1;		-1	 2]
+Sampled  Covariance matrix: [2.9763   -0.9230;    -0.9230    1.9022] <--Error O(0.01,0.1)
+
+Fitting:
+NS: Numerical solution obtained after a long enough time evolution
+
+Analytic Mean: [0		 0]
+Sampled  Mean: [-0.0072    0.0141] <--- Error is O(0.01)
+
+Analytic Covariance matrix: [3		 -1;		-1	 2]
+Sampled  Covariance matrix: [2.9490   	-1.0131;-1.0131    2.0364] <-- Error is O(0.05) = O(0.1)
+
