@@ -1,0 +1,137 @@
+%% The Euler-Maruyama method
+%% Initializing
+NumOfParticle = 10^3;
+delta_t = 0.1;
+Total_Time = 10;
+N = Total_Time / delta_t;
+D_qq = 1;
+D_pp = 1;
+mu_1 = 0;
+q = normrnd(mu_1, D_qq, NumOfParticle, 1); 
+p = normrnd(mu_1, D_pp, NumOfParticle, 1);
+%% Transfer & Diffusion
+for j = 1 : N
+    epsilon_q = randn(NumOfParticle, 1, 'single');
+    epsilon_p = randn(NumOfParticle, 1, 'single'); 
+    alpha = [p, -q - p];
+    q = q + alpha(:, 1) * delta_t + epsilon_q * sqrt(2*D_qq*delta_t);
+    p = p + alpha(:, 2) * delta_t + epsilon_p * sqrt(2*D_pp*delta_t); 
+end
+%% Set up the mesh
+x = linspace(-6, 6, 51); % x coordinates
+y = linspace(-6, 6, 51); % y coordinates
+[X, Y] = meshgrid(x, y); % create a 2D grid of points
+%% Generate scatter points
+points_fin = [q, p]; % scatter points using the final state of the particles
+%% Compute 3D histogram of scatter points for the final state
+[counts_fin, edges_fin] = histcounts2(points_fin(:, 1), points_fin(:, 2), x, y);
+%% Visualization
+figure(1);
+nbins = 50;
+histogram2(points_fin(:, 1),points_fin(:, 2),nbins,'Normalization','pdf');
+xlabel('q');
+ylabel('p');
+
+figure(2);
+scatter(points_fin(:,1), points_fin(:,2), 'r'); hold on;
+q_analyt = linspace(-6, 6, 51);
+p_analyt = linspace(-6, 6, 51);
+[Q, P] = meshgrid(q_analyt, p_analyt);
+mu = (1/(2.*sqrt(5).*pi)).*exp(-((1/5).*(abs(Q)).^2 + (1/5).*Q.*P + (3/10).*(abs(P)).^2));
+contour(Q,P,mu,20,'ShowText','on')
+
+for i = 1:numel(x)
+    plot([x(i) x(i)], [y(1) y(end)], 'k');
+end
+
+for i = 1:numel(x)
+    plot([x(1) x(end)], [y(i) y(i)], 'k');
+end
+hold off;
+
+figure(3);
+surf(X(1:end-1,1:end-1), Y(1:end-1,1:end-1), counts_fin, 'EdgeColor', 'black');
+view(3);
+xlabel('q');
+ylabel('p');
+zlabel('Counts');
+colormap('jet');
+colorbar;
+
+% hold on
+% 
+% surf(Q(1:end,1:end), P(1:end,1:end), mu, 'EdgeColor', 'black');
+% view(3);
+
+% pcolor(q_analyt, p_analyt, mu);
+% shading interp;
+% colormap('jet');
+% colorbar;
+% axis equal tight;
+
+xlabel('q');
+ylabel('p');
+
+% hold off
+
+figure(4);
+surf(Q(1:end,1:end), P(1:end,1:end), mu, 'EdgeColor', 'black');
+xlabel('q');
+ylabel('p');
+
+%% Kernel Density
+xi = [q p];
+rng('default')  % For reproducibility
+x = points_fin;
+figure(5)
+ksdensity(x,xi);
+xlabel('q');
+ylabel('p');
+
+hold on
+
+q_analyt = linspace(-6, 6, 51);
+p_analyt = linspace(-6, 6, 51);
+[Q, P] = meshgrid(q_analyt, p_analyt);
+mu = (1/(2.*sqrt(5).*pi)).*exp(-((1/5).*(abs(Q)).^2 + (1/5).*Q.*P + (3/10).*(abs(P)).^2));
+contour(Q,P,mu,20,'ShowText','on')
+
+hold off
+
+%%
+
+gridx1 = -0.25:.05:1.25;
+gridx2 = 0:.1:15;
+[x1,x2] = meshgrid(gridx1, gridx2);
+x1 = x1(:);
+x2 = x2(:);
+xi = [x1 x2];
+rng('default')  % For reproducibility
+x = [0+.5*rand(20,1) 5+2.5*rand(20,1);
+            .75+.25*rand(10,1) 8.75+1.25*rand(10,1)];
+figure(6)
+ksdensity(x,xi);
+
+%%
+gridx1 = linspace(-6, 6, 51);
+gridx2 = linspace(-6, 6, 51);
+[x1,x2] = meshgrid(gridx1, gridx2);
+x1 = x1(:);
+x2 = x2(:);
+xi = [x1 x2];
+rng('default')
+R = points_fin;
+figure(6)
+ksdensity(R,xi);
+xlabel('q');
+ylabel('p');
+
+hold on
+
+q_analyt = linspace(-6, 6, 51);
+p_analyt = linspace(-6, 6, 51);
+[Q, P] = meshgrid(q_analyt, p_analyt);
+mu = (1/(2.*sqrt(5).*pi)).*exp(-((1/5).*(abs(Q)).^2 + (1/5).*Q.*P + (3/10).*(abs(P)).^2));
+contour(Q,P,mu,20,'ShowText','on')
+
+hold off
