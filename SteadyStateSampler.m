@@ -13,6 +13,7 @@ kmin=0.; kmax=0.;
 InvSigma = [2./5., 1./5.; 1./5., 3./5.]
 %therefore it's the inverse of
 Sigma = [3., -1,;-1., 2.]
+log(det(Sigma))/2
 Sigma*InvSigma
 InvSigma*Sigma
 figure(3); hold on; title('Steady state')
@@ -39,10 +40,14 @@ end
 hist = histogram2(x,k,'DisplayStyle','tile','ShowEmptyBins','on');
 GMModel = fitgmdist([x,k],1)
 GMModel.mu
-GMModel.Sigma
+CovMatrix = GMModel.Sigma
+Entropy = log(det(CovMatrix))/2.
 gmPDF = @(x,k) arrayfun(@(x0,k0) pdf(GMModel,[x0 k0]),x,k);
 gfun = gca;
 fcontour(gmPDF,[gfun.XLim gfun.YLim],'--r');
+% If we try Shannon entropy for coherent states (w>0) we should be good
+% S = - \int w log(w) = 0.5 * \int exp(-0.5 *z^T S^-1 z) z^T S^-1 z dx dk
+% Calculate analytical formula for the case of Gaussians (coherent states)
 % LEVEL SETS OF STEADY STATE INCLUDED IN THE FIGURE
 fss=@(x,k) (3./10.)*(k.^2) + (x.^2)/5. + x.*k/5.;
 dxplot = (xmax-xmin)/Nplot;
@@ -53,4 +58,4 @@ kplot = kmin:dkplot:kmax;
 z=fss(X,K);
 contour(X,K,z,100);%THIS PROVOKES THE ISSUE...?
 hold off;
-exportgraphics(gcf,'AnalyticalSteadyState.pdf','ContentType','vector')
+exportgraphics(gcf,'AnalyticalSteadyState.pdf','ContentType','image')
