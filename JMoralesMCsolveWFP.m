@@ -17,19 +17,19 @@
 % exp(-x^2/a^2) has sigma=a/sqrt(2), exp(-a^2 k^2) has sigma=1/(sqrt(2)a)
 
 L=1.0; %h=2*pi; %1=hbar=h/(2pi) => h=2*pi
-%sigmax=L/sqrt(2); sigmak=1/(L*sqrt(2)); %Harmonic oscillator parameters
-sigmax=5.*L/sqrt(2); sigmak=5.*1./(L*sqrt(2));%Small diffus/varianz/uncrtn
+sigmax=L/sqrt(2); sigmak=1/(L*sqrt(2)); %Harmonic groundstate parameters
+%sigmax=2.25.*L/sqrt(2); sigmak=2.25.*1./(L*sqrt(2));%diffus/varianz/uncrtn
 
 Nsamples = 10^4; % <---- PARAMETER 1: VALUE DETERMINES NUMERICS CONVERGENCE
 T=50; dt=0.01; % <----- PARAMETERS 2 & 3: VALUES DETERMINE NUMERICAL CVG.
 Ntime = round(T/dt);
 x=zeros(Ntime,Nsamples); k=zeros(Ntime,Nsamples); 
 Entropy=zeros(Ntime,1); weightL2norm = zeros(Ntime,1); antisym = zeros(Ntime,1)
-Nplot=1000; Sigma = [3., -1,;-1., 2.]
+Nplot=1000; Sigma = [3., -1.;-1., 2.]
 %STEP 1: Sampling of Initial Condition, represented as point distribution.
 for i=1:Nsamples
     x(1,i)=normrnd(0,sigmax); k(1,i)=normrnd(0,sigmak); %IC: Groundstate
-%    RandomVec=mvnrnd([0, 0],1.*Sigma); %Sampling from coeff*steady-state
+%    RandomVec=mvnrnd([0, 0],0.5*Sigma); %Sampling from coeff*steady-state
 %    x(1,i)=RandomVec(1);
 %    k(1,i)=RandomVec(2);
 end
@@ -106,8 +106,10 @@ Sinv = [a*(d+4*s^2)-b^2, 4*b*s^2; 4*b*s^2, 4*((1+a*s^2)*d-(b^2)*(s^2))*s^2]
 Sinv = Sinv/(d*(1+a*s^2)+(s^2)*(4*(1+a*s^2)-b^2));
 S = Sinv^(-1)
 EntropySS = log(det(S))/2.;
-figure(4); hold on;
-plot((1:1:Ntime)*dt,Entropy,'.')
+figure(4); hold on; 
+%plot((1:1:Ntime)*dt,Entropy,'.')
+errorbar((1:1:Ntime)*dt,Entropy,0.03*ones(size(Entropy)),"-s",...
+    "MarkerEdgeColor","blue","MarkerFaceColor",[0.65 0.85 0.90])
 xlabel('Time (t)')
 ylabel('Entropy (H)')
 yline(EntropySS)
